@@ -1,10 +1,12 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import connectDB from "./db";
-import User from "../models/User";
 import bcrypt from "bcryptjs";
+import connectDB from "@/lib/db";
+import User from "@/models/User";
+import authConfig from "@/lib/auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+    ...authConfig,
     providers: [
         Credentials({
             credentials: {
@@ -15,10 +17,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 const email = credentials?.email as string | undefined;
                 const password = credentials?.password as string | undefined;
 
-                if (!email || !password) {
-                    return null;
-                }
+                if (!email || !password) return null;
+
                 await connectDB();
+
                 const user = await User.findOne({ email: email.toLowerCase() });
                 if (!user || !user.password) return null;
 
@@ -35,22 +37,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
         }),
     ],
-    session: { strategy: "jwt" },
-    pages: { signIn: "/login" },
-    callbacks: {
-        async jwt({ token, user }) {
-            if (user) {
-                token.id = user.id;
-                token.username = user.username;
-            }
-            return token
-        },
-        async session({ session, token }) {
-            if (session.user) {
-                session.user.id = token.id as string
-                session.user.username = token.username as string
-            }
-            return session
-        }
-    },
 });
