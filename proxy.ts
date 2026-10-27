@@ -1,15 +1,15 @@
 import NextAuth from "next-auth";
-import authConfig from "./lib/auth.config";
+import { NextResponse } from "next/server";
+import authConfig from "@/lib/auth.config";
 
-
-const { auth } = NextAuth(authConfig)
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
-    const { nextUrl } = req
-    const path = nextUrl.pathname
-    const isLoggedIn = !!req.auth
+    const { nextUrl } = req;
+    const path = nextUrl.pathname;
+    const isLoggedIn = !!req.auth;
 
-    const isAuthPage = path === "/login" || path === "/register"
+    const isAuthPage = path === "/login" || path === "/register";
 
     const isProtected =
         path === "/posts/new" ||
@@ -17,7 +17,26 @@ export default auth((req) => {
         path.startsWith("/bookmarks") ||
         path.startsWith("/settings");
 
+    if (isAuthPage && isLoggedIn) {
+        return NextResponse.redirect(new URL("/", nextUrl));
+    }
 
+    if (isProtected && !isLoggedIn) {
+        const loginUrl = new URL("/login", nextUrl);
+        loginUrl.searchParams.set("callbackUrl", path);
+        return NextResponse.redirect(loginUrl);
+    }
 
+    return NextResponse.next();
+});
 
-})
+export const config = {
+    matcher: [
+        "/login",
+        "/register",
+        "/posts/new",
+        "/posts/:slug/edit",
+        "/bookmarks/:path*",
+        "/settings/:path*",
+    ],
+};

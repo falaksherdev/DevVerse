@@ -6,7 +6,7 @@ import { loginUser, type LoginState } from "@/lib/actions/auth";
 
 const initialState: LoginState = {};
 
-export default function LoginForm() {
+export default function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const [state, formAction, isPending] = useActionState(
     loginUser,
     initialState,
@@ -14,6 +14,8 @@ export default function LoginForm() {
 
   return (
     <form action={formAction} className="space-y-4">
+      <input type="hidden" name="callbackUrl" value={callbackUrl ?? "/"} />
+
       {state.error && (
         <p className="rounded-lg bg-danger-soft px-3.5 py-2.5 text-sm text-danger">
           {state.error}

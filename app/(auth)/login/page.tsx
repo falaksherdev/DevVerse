@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 import LoginForm from "@/components/auth/LoginForm";
 
 export const metadata = { title: "Log in" };
@@ -7,12 +5,9 @@ export const metadata = { title: "Log in" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ registered?: string }>;
+  searchParams: Promise<{ registered?: string; callbackUrl?: string }>;
 }) {
-  const session = await auth();
-  if (session) redirect("/");
-
-  const { registered } = await searchParams;
+  const { registered, callbackUrl } = await searchParams;
 
   return (
     <>
@@ -24,7 +19,7 @@ export default async function LoginPage({
         </p>
       )}
 
-      <LoginForm />
+      <LoginForm callbackUrl={callbackUrl} />
     </>
   );
 }

@@ -1,7 +1,16 @@
-import React from "react";
+import { auth } from "@/lib/auth";
 
-const page = () => {
-  return <div>page</div>;
-};
+export default async function HomePage() {
+  const session = await auth();
 
-export default page;
+  return (
+    <div className="rounded-2xl border border-border bg-card p-8">
+      <h1 className="text-2xl font-bold">
+        {session?.user
+          ? `Welcome, ${session.user.name}!`
+          : "Welcome to DevVerse"}
+      </h1>
+      <p className="mt-2 text-muted-foreground">Posts feed !</p>
+    </div>
+  );
+}

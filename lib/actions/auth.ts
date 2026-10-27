@@ -4,7 +4,7 @@
 import connectDB from "../db";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
-import { signIn } from "../auth";
+import { signIn, signOut } from "../auth";
 import { AuthError } from "next-auth";
 import User from "@/models/User";
 
@@ -78,24 +78,30 @@ export async function loginUser(
     prevState: LoginState,
     formData: FormData
 ): Promise<LoginState> {
-    const email = String(formData.get("email") ?? "").trim().toLowerCase()
-    const password = String(formData.get("password") ?? "")
+    const email = String(formData.get("email") ?? "").trim().toLowerCase();
+    const password = String(formData.get("password") ?? "");
+    const rawCallback = String(formData.get("callbackUrl") ?? "/");
+
+    const redirectTo =
+        rawCallback.startsWith("/") && !rawCallback.startsWith("//")
+            ? rawCallback
+            : "/";
 
     if (!email || !password) {
-        return {
-            error: "Email and password are required"
-        }
+        return { error: "Email and password are required" };
     }
 
     try {
-        await signIn("credentials", { email, password, redirectTo: "/" })
+        await signIn("credentials", { email, password, redirectTo });
     } catch (error) {
         if (error instanceof AuthError) {
-            return {
-                error: "Invalid email or password"
-            }
+            return { error: "Invalid email or password" };
         }
-        throw error
+        throw error;
     }
-    return {}
+
+    return {};
+}
+export async function logoutUser() {
+    await signOut({ redirectTo: "/" });
 }
